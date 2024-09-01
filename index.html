@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hello Globe</title>
+    <link rel="stylesheet" href="https://resource.mapray.com/styles/v1/mapray.css">
+</head>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+    div#mapray-container {
+        display: flex;
+        height: 100%;
+    }
+</style>
+<body>
+    <div id="mapray-container"></div>
+</body>
+</html>
+<script src="https://resource.mapray.com/mapray-js/v0.9.5/mapray.min.js"></script>
+<script>
+     // Set Access Token for mapray cloud
+       var accessToken = "";
+
+       // For Image tiles
+       var imageProvider = new mapray.StandardImageProvider( { url: "https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/", format: "jpg", min_level: 2, max_level: 18 } );
+
+       // Create viewer
+       var viewer = new mapray.Viewer(
+           "mapray-container", {
+               image_provider: imageProvider,
+               dem_provider: new mapray.CloudDemProvider(accessToken)
+           }
+       );
+       viewer.attribution_controller.addAttribution({
+           display: "国土地理院",
+           link: "http://maps.gsi.go.jp/development/ichiran.html"
+        });
+       // Setting the position of camera
+       var home_pos = { longitude: 138.247739, latitude: 35.677604, height: 3000 };
+
+       var home_view_geoPoint = new mapray.GeoPoint( home_pos.longitude, home_pos.latitude, home_pos.height );
+       var home_view_to_gocs = home_view_geoPoint.getMlocsToGocsMatrix( mapray.GeoMath.createMatrix() );
+
+       var cam_pos = mapray.GeoMath.createVector3( [-3000, 2600, 1000] );
+       var cam_end_pos    = mapray.GeoMath.createVector3( [0, 0, 0] );
+       var cam_up         = mapray.GeoMath.createVector3( [0, 0, 1] );
+
+       var view_to_home = mapray.GeoMath.createMatrix();
+       mapray.GeoMath.lookat_matrix(cam_pos, cam_end_pos, cam_up, view_to_home);
+
+       var view_to_gocs = viewer.camera.view_to_gocs;
+       mapray.GeoMath.mul_AA( home_view_to_gocs, view_to_home, view_to_gocs );
+
+       viewer.camera.near = 30;
+       viewer.camera.far = 500000;
+</script>
